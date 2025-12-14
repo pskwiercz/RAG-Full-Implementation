@@ -28,7 +28,8 @@ public class WebSearchRAGChatClientConfig {
         var webSearchRAGAdvisor = RetrievalAugmentationAdvisor.builder()
                 .documentRetriever(WebSearchDocumentRetriever.builder()
                         .restClientBuilder(restClientBuilder)
-                        .maxResults(5).build())
+                        .maxResults(5)
+                        .build())
                 .build();
 
         return chatClientBuilder
