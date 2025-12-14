@@ -20,8 +20,8 @@ import java.util.List;
 public class RAGChatClientConfig {
 
     @Bean("ragController")
-    public ChatClient chatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory
-            ,RetrievalAugmentationAdvisor  retrievalAugmentationAdvisor) {
+    public ChatClient chatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory,
+                                 RetrievalAugmentationAdvisor retrievalAugmentationAdvisor) {
         Advisor loggerAdvisor = new SimpleLoggerAdvisor();
         Advisor tokenUsageAdvisor = new TokenUsageAdvisor();
         Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();

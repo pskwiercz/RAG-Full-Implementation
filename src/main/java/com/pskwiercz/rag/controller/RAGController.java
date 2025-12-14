@@ -1,8 +1,6 @@
 package com.pskwiercz.rag.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.document.Document;
-import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,15 +13,13 @@ import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @RestController
 @RequestMapping("/api/rag")
 public class RAGController {
 
     private final ChatClient webSearchChatClient;
     private final ChatClient ragChatClient;
+    private final ChatClient compositeChatClient;
     private final VectorStore vectorStore;
 
 
@@ -32,9 +28,11 @@ public class RAGController {
 
     public RAGController(@Qualifier("webSearchRAGChatClient") ChatClient webSearchchatClient,
                          @Qualifier("ragController") ChatClient ragChatClient,
+                         @Qualifier("compositeRagController") ChatClient compositeChatClient,
                          VectorStore vectorStore) {
         this.webSearchChatClient = webSearchchatClient;
-        this.ragChatClient = webSearchchatClient;
+        this.ragChatClient = ragChatClient;
+        this.compositeChatClient = compositeChatClient;
         this.vectorStore = vectorStore;
     }
 
@@ -58,9 +56,19 @@ public class RAGController {
     }
 
     @GetMapping("/web-search/chat")
-    public ResponseEntity<String> webSearchChat(@RequestHeader("username")
-                                                String username, @RequestParam("message") String message) {
+    public ResponseEntity<String> webSearchChat(@RequestHeader("username") String username,
+                                                @RequestParam("message") String message) {
         String answer = webSearchChatClient.prompt()
+                .advisors(a -> a.param(CONVERSATION_ID, username))
+                .user(message)
+                .call().content();
+        return ResponseEntity.ok(answer);
+    }
+
+    @GetMapping("/web-rag/chat")
+    public ResponseEntity<String> webRagChat(@RequestHeader("username") String username,
+                                             @RequestParam("message") String message) {
+        String answer = compositeChatClient.prompt()
                 .advisors(a -> a.param(CONVERSATION_ID, username))
                 .user(message)
                 .call().content();
